@@ -1,3 +1,5 @@
 /.vs
 /x64
 /immt/x64
+/immtSetup/Debug
+/immtSetup/Release
