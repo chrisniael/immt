@@ -58,7 +58,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     wcex.lpszClassName = L"IMMTWndClass";
     RegisterClassEx(&wcex);
 
-    hWnd = CreateWindowW(L"IMMTWndClass", L"IMMT", WS_OVERLAPPEDWINDOW,
+    hWnd = CreateWindowW(L"IMMTWndClass", L"immt", WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
     if (!hWnd)
     {
@@ -106,7 +106,7 @@ void InitTrayIcon(HWND hWnd)
     nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     nid.uCallbackMessage = WM_TRAYICON;
     nid.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_IMMT)); // Use your icon resource ID here
-    wcscpy_s(nid.szTip, L"IMMT");
+    wcscpy_s(nid.szTip, L"immt");
 
     Shell_NotifyIcon(NIM_ADD, &nid);
 }
@@ -120,7 +120,7 @@ bool IsAutoStartEnabled()
 
     if (RegOpenKey(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hKey) == ERROR_SUCCESS)
     {
-        if (RegQueryValueEx(hKey, L"IMMT", NULL, &dwType, (LPBYTE)szPath, &dwSize) == ERROR_SUCCESS)
+        if (RegQueryValueEx(hKey, L"immt", NULL, &dwType, (LPBYTE)szPath, &dwSize) == ERROR_SUCCESS)
         {
             RegCloseKey(hKey);
             return true;
@@ -140,11 +140,11 @@ void SetAutoStart(bool enable)
     {
         if (enable)
         {
-            RegSetValueEx(hKey, L"IMMT", 0, REG_SZ, (LPBYTE)szPath, (lstrlen(szPath) + 1) * sizeof(wchar_t));
+            RegSetValueEx(hKey, L"immt", 0, REG_SZ, (LPBYTE)szPath, (lstrlen(szPath) + 1) * sizeof(wchar_t));
         }
         else
         {
-            RegDeleteValue(hKey, L"IMMT");
+            RegDeleteValue(hKey, L"immt");
         }
         RegCloseKey(hKey);
     }
