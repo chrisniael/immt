@@ -16,6 +16,7 @@
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
 #endif
+#define IDM_AUTOSTART 32771
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

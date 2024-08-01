@@ -1,6 +1,7 @@
 #include "framework.h"
 #include "immt.h"
 #include <shellapi.h>
+#include <shlwapi.h>
 
 #include "core.h"
 
@@ -110,6 +111,45 @@ void InitTrayIcon(HWND hWnd)
     Shell_NotifyIcon(NIM_ADD, &nid);
 }
 
+bool IsAutoStartEnabled()
+{
+    HKEY hKey;
+    DWORD dwType = REG_SZ;
+    wchar_t szPath[MAX_PATH];
+    DWORD dwSize = sizeof(szPath);
+
+    if (RegOpenKey(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hKey) == ERROR_SUCCESS)
+    {
+        if (RegQueryValueEx(hKey, L"IMMT", NULL, &dwType, (LPBYTE)szPath, &dwSize) == ERROR_SUCCESS)
+        {
+            RegCloseKey(hKey);
+            return true;
+        }
+        RegCloseKey(hKey);
+    }
+    return false;
+}
+
+void SetAutoStart(bool enable)
+{
+    HKEY hKey;
+    wchar_t szPath[MAX_PATH];
+    GetModuleFileName(NULL, szPath, MAX_PATH);
+
+    if (RegOpenKey(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Run", &hKey) == ERROR_SUCCESS)
+    {
+        if (enable)
+        {
+            RegSetValueEx(hKey, L"IMMT", 0, REG_SZ, (LPBYTE)szPath, (lstrlen(szPath) + 1) * sizeof(wchar_t));
+        }
+        else
+        {
+            RegDeleteValue(hKey, L"IMMT");
+        }
+        RegCloseKey(hKey);
+    }
+}
+
 //
 //  FUNCTION: ShowContextMenu(HWND)
 //
@@ -119,11 +159,14 @@ void ShowContextMenu(HWND hWnd)
 {
     POINT pt;
     GetCursorPos(&pt);
-
+    
     HMENU hMenu = CreatePopupMenu();
-    AppendMenu(hMenu, MF_STRING, IDM_ABOUT, L"关于");  // Change to Chinese "关于"
-    AppendMenu(hMenu, MF_SEPARATOR, 0, nullptr);      // Add a separator line
-    AppendMenu(hMenu, MF_STRING, IDM_EXIT, L"退出");  // Change to Chinese "退出"
+    // Add Auto-Start menu item with a check mark if enabled
+    bool isAutoStartEnabled = IsAutoStartEnabled();
+    AppendMenu(hMenu, MF_STRING | (isAutoStartEnabled ? MF_CHECKED : 0), IDM_AUTOSTART, L"开机自动启动");
+    AppendMenu(hMenu, MF_STRING, IDM_ABOUT, L"关于");
+    AppendMenu(hMenu, MF_SEPARATOR, 0, nullptr);
+    AppendMenu(hMenu, MF_STRING, IDM_EXIT, L"退出");
 
     // Display the menu
     SetForegroundWindow(hWnd); // Required to bring up the context menu properly
@@ -151,10 +194,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         int wmId = LOWORD(wParam);
         switch (wmId)
         {
+        case IDM_AUTOSTART:
+        {
+            bool isEnabled = IsAutoStartEnabled();
+            SetAutoStart(!isEnabled);
+            break;
+        }
         case IDM_ABOUT:
-            if (!isAboutDialogOpen) // Check if the About dialog is already open
+            if (!isAboutDialogOpen)
             {
-                isAboutDialogOpen = true; // Set the flag to true indicating the About dialog is open
+                isAboutDialogOpen = true;
                 DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
             }
             break;
