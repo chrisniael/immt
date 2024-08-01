@@ -105,7 +105,7 @@ void InitTrayIcon(HWND hWnd)
     nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     nid.uCallbackMessage = WM_TRAYICON;
     nid.hIcon = LoadIcon(hInst, MAKEINTRESOURCE(IDI_IMMT)); // Use your icon resource ID here
-    wcscpy_s(nid.szTip, L"IMMT Application");
+    wcscpy_s(nid.szTip, L"IMMT");
 
     Shell_NotifyIcon(NIM_ADD, &nid);
 }
