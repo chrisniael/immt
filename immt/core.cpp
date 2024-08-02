@@ -66,7 +66,13 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
 		if (bIsWinPressed && bIsSpacePressed) {
 			OnWinSpacePressed();
-			return 1; // 某些组合键可能需要返回1以防止传递到其他程序或系统
+			//return 1; // 某些组合键可能需要返回1以防止传递到其他程序或系统
+			// 这里如果下一帧 Win 先抬起，那么，当前帧的 Space 按下消息被吃掉后，Win 就能形成按下抬起的消息组合，触发开始菜单的打开。
+			// 看下面这个键盘消息序列：
+			//1, WM KEYDOWN, vkcode=91, Win 按下
+			//2. WM KEYDOWN, vkcode=32, Space 按下（这里触发输入法状态切换，并且吃掉 Space Down 这个消息）
+			//3. WM KEYUP, vkcode=91, Win 抬起（因为上一步的 Space 按下消息被吃掉了，所以从系统角度看，就是按下并抬起了 Win 键）
+			//4. WM KEYUP, vkCode=32, Space 抬起
 		}
 	}
 	return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
